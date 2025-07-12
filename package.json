@@ -1,0 +1,15 @@
+{
+  "name": "expensetracker",
+  "version": "1.0.0",
+  "description": "a simple expense tracker application",
+  "main": "etracker.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "etracker": "./etracker.js"
+  },
+  "author": "trenter39",
+  "license": "MIT"
+}

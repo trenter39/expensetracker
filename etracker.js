@@ -33,7 +33,7 @@ switch (command) {
         showHelp();
         break;
     case 'export':
-        exportToJSON();
+        exportCommand();
         break;
     default:
         console.log('Unknown command. See help for more information.');
@@ -64,12 +64,14 @@ function updateCommand() {
         const descriptionMatch = payload.match(/--description\s+([^-]+)/);
         const amountMatch = payload.match(/--amount\s+(\d+)/);
         const categoryMatch = payload.match(/--category\s+([^-]+)/);
-        if (expenseIDMatch && (descriptionMatch || amountMatch)) {
+        if (expenseIDMatch && (descriptionMatch || amountMatch || categoryMatch)) {
             const expenseID = Number(expenseIDMatch[1]);
             const description = descriptionMatch ? descriptionMatch[1].trim() : '';
             const amount = amountMatch ? parseFloat(amountMatch[1]) : null;
             const category = categoryMatch ? categoryMatch[1].trim() : '';
             updateExpense(expenseID, description, amount, category);
+        } else {
+            console.log('Enter amount or description of an expense to update!');
         }
     } else {
         console.log('Invalid format. update 1 --description Pay a fee --amount 5 --category Administrative');
@@ -78,7 +80,7 @@ function updateCommand() {
 
 function deleteCommand() {
     if (payload) {
-        const expenseIDMatch = payload.match(/--id\s(\d+)/);
+        const expenseIDMatch = payload.match(/--id\s+(\d+)/);
         if (expenseIDMatch) {
             const expenseID = Number(expenseIDMatch[1]);
             deleteExpense(expenseID);
@@ -104,6 +106,12 @@ function summaryCommand() {
     } else {
         console.log('Invalid format. summary --month 7')
     }
+}
+
+function exportCommand() {
+    const pathMatch = payload.match(/--path\s+(.+)/);
+    const filePath = pathMatch ? pathMatch[1].trim() : 'expenses.json';
+    exportToJSON(filePath);
 }
 
 function loadExpenses() {
@@ -185,12 +193,12 @@ function showExpensesList() {
         return;
     }
     console.log(
-        `${"ID".padEnd(4)}${"Date".padEnd(13)}${"Description".padEnd(18)}${"Amount".padEnd(12)}${"Category".padEnd(12)}`
+        `${"ID".padEnd(4)}${"Date".padEnd(13)}${"Description".padEnd(26)}${"Amount".padEnd(12)}${"Category".padEnd(12)}`
     );
     expenses.forEach(expense => {
         const date = expense.createdAt.split('T')[0];
         const id = String(expense.id).padEnd(4);
-        const description = expense.description.padEnd(18);
+        const description = expense.description.padEnd(26);
         const amount = (`$${expense.amount}`).padEnd(12);
         const category = expense.category.padEnd(12);
         console.log(`${id}${date.padEnd(13)}${description}${amount}${category}`)
@@ -247,10 +255,10 @@ function writeToFile() {
     }
 }
 
-function exportToJSON() {
+function exportToJSON(filePath) {
     try {
-        fs.writeFileSync('expenses.json', JSON.stringify(expenses, null, 2), 'utf8');
-        console.log('Export to expenses.json was done successfully!');
+        fs.writeFileSync(filePath, JSON.stringify(expenses, null, 2), 'utf8');
+        console.log(`Export to ${filePath} was done successfully!`);
     } catch (err) {
         console.error('Error writing to expenses.json:', err);
     }
@@ -264,61 +272,61 @@ Usage:
     
 Commands:
 
-    add                         Add a new expense
-      --description <text>        Description of the expense
-      --amount <number>           Expense amount
-      --category <text>           Expense category
+    add                          Add a new expense
+      --description <text>         Description of the expense
+      --amount <number>            Expense amount
+      --category <text>            Expense category
     
       Example:
       etracker add --description Tea --amount 10 --category Drinks
       
 
     update --id <id>             Update an existing expense by ID
-      --description <text>        (Optional) New description
-      --amount <number>           (Optional) New amount
-      --category <text>           (Optional) New category
+      --description <text>         (Optional) New description
+      --amount <number>            (Optional) New amount
+      --category <text>            (Optional) New category
     
       Example:
       etracker update 1 --description Pay a fee --amount 5 --category Admin
      
       
-    delete --id <id>              Delete an expense by ID
+    delete --id <id>             Delete an expense by ID
     
       Example:
       etracker delete 1
      
       
-    list                       List all expenses
+    list                         List all expenses
     
       Example:
       etracker list
     
 
-    summary                    Show total of all expenses
+    summary                      Show total of all expenses
     
       Example:
       etracker summary
       
 
-    summary --month <1-12>     Show total expenses for a specific month
+    summary --month <1-12>       Show total expenses for a specific month
     
       Example:
       etracker summary --month 7
       
 
-    summary --category <text>  Show total expenses for a category
+    summary --category <text>    Show total expenses for a category
     
       Example:
       etracker summary --category Food
       
       
-    export                     Export all expenses to a JSON file
+    export                       Export all expenses to a JSON file
     
       Example:
       etracker export
       
       
-    help                       Show this help message
+    help                         Show this help message
     
       Example:
       etracker help
